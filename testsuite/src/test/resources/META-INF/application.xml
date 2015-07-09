@@ -14,7 +14,9 @@
         <ejb>${bc-rest}</ejb>
     </module>
     <module>
-        <ejb>${reports-rest}</ejb>
+        <web>
+            <web-uri>${reports-rest}</web-uri>
+        </web>
     </module>
     <module>
         <ejb>${testsuite}</ejb>
