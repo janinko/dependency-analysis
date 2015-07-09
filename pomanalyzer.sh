@@ -1,10 +1,11 @@
-
+#!/bin/bash
 tmpfile=`mktemp`
+RED='tput setaf 1'
 mvn -q dependency:list -DoutputFile=$tmpfile -DappendOutput=true
 sort -u $tmpfile | grep "^ *.*:.*:.*:.*"| sed "s/^ *//" | awk 'BEGIN {IFS=":"; FS=":"; OFS=":"} {print $1,$2,$4}' | while read line; do
     wresp=`./listings.sh check w $line`
     bresp=`./listings.sh check b $line`
-    if echo $wresp | grep -q "is whitelistd"; then
+    if echo $wresp | grep -q "is whitelisted"; then
         wl=true
     elif echo $wresp | grep -q "is NOT whitelisted"; then
         wl=false
@@ -21,14 +22,15 @@ sort -u $tmpfile | grep "^ *.*:.*:.*:.*"| sed "s/^ *//" | awk 'BEGIN {IFS=":"; F
         break
     fi
     if $wl && $bl; then
-        echo "Both lists: $line"
+        echo -e "\e[39mBoth lists: $line"
     elif $wl; then
-        echo "White list: $line"
+        echo -e "\e[32mWhite list: $line"
     elif $bl; then
-        echo "Black list: $line"
+        echo -e "\e[31mBlack list: $line"
     else
-        echo "None list:  $line"
+        echo -e "\e[39mNone list:  $line"
     fi
 done
+echo -e "\e[39m"
 rm $tmpfile
 
