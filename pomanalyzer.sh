@@ -1,6 +1,5 @@
 #!/bin/bash
 tmpfile=`mktemp`
-RED='tput setaf 1'
 mvn -q dependency:list -DoutputFile=$tmpfile -DappendOutput=true
 sort -u $tmpfile | grep "^ *.*:.*:.*:.*"| sed "s/^ *//" | awk 'BEGIN {IFS=":"; FS=":"; OFS=":"} {print $1,$2,$4}' | while read line; do
     wresp=`./listings.sh check w $line`
