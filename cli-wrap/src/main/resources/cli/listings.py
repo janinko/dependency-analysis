@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-import inspect
 import re
 import subprocess
-import requests
 import argparse
 import sys
 import json
 import da_cli_script
 import pretty
 import testsuite
-import asyncio
-import websockets
 
 def addBlack(gav):
     da_cli_script.add_artifacts(gav, "black")
@@ -37,7 +33,7 @@ def check(color_par,gav):
         groupId, artifactId, version = gav.split(":",3)
     else:
         exit()
-    response = da_cli_script.requests_get(da_cli_script.da_server + "/listings/blacklist/gav?groupid="+groupId+"&artifactid="+artifactId+"&version="+version)
+    response = da_cli_script.client._get("/listings/blacklist/gav?groupid="+groupId+"&artifactid="+artifactId+"&version="+version)
     output = response.json()
     output = (json.dumps(output))
 
@@ -203,7 +199,7 @@ def report():
     query += "}"
     query += "}"
     
-    output = asyncio.get_event_loop().run_until_complete(get_response(query))
+    output = da_cli_script.client._ws(query)
 
     if style == "pretty":
         if "errorType" in output:
@@ -283,7 +279,7 @@ def lookup():
     query += "]}"
     query += "}"
     
-    output = asyncio.get_event_loop().run_until_complete(get_response(query))
+    output = da_cli_script.client._ws(query)
     
     if "errorType" in output:
             print(output['errorMessage'])
@@ -344,7 +340,7 @@ def scm_report():
     query += "}"
     query += "}"
     
-    output = asyncio.get_event_loop().run_until_complete(get_response(query))
+    output = da_cli_script.client._ws(query)
 
     if style == "pretty":
         if "errorType" in output:
@@ -409,7 +405,7 @@ def scm_report_adv():
     query += "}"
     query += "}"
     
-    output = asyncio.get_event_loop().run_until_complete(get_response(query))
+    output = da_cli_script.client._ws(query)
     if style == "pretty":
         if "errorType" in output:
             print(output['errorMessage'])
@@ -479,7 +475,7 @@ def align_report():
     query += "}"
     
 
-    output = asyncio.get_event_loop().run_until_complete(get_response(query))
+    output = da_cli_script.client._ws(query)
     if style == "pretty":
         if "errorType" in output:
             print(output['errorMessage'])
@@ -512,7 +508,7 @@ def prod_difference():
         exit()
     
     output = ""
-    output = da_cli_script.requests_get(da_cli_script.da_server + "/products/diff?leftProduct="+str(leftID)+"&rightProduct="+str(rightID)).json()
+    output = da_cli_script.client._get("/products/diff?leftProduct="+str(leftID)+"&rightProduct="+str(rightID)).json()
     
     if style == "pretty":
         if "errorType" in output:
@@ -524,20 +520,4 @@ def prod_difference():
             exit()
     else:
         print(json.dumps(output))    
-              
-async def get_response(query):
-    try:
-        async with websockets.connect("ws://"+da_cli_script.da_server_ws) as websocket:
-            await websocket.send(query)
-            output = await websocket.recv()
-        try:
-            output = json.loads(output)["result"]
-            return output
-        except KeyError:
-            print(json.loads(output)["error"]["message"])
-            if "data" in json.loads(output)["error"]:
-                print(json.loads(output)["error"]["data"])
-            exit()
-    except websockets.exceptions.InvalidHandshake:
-        print("Server " + "ws://"+da_cli_script.da_server_ws + " not found!")
-        exit()
+
