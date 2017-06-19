@@ -14,8 +14,8 @@ class Blacklist:
 
     def __init__(self, da):
         self.endpoint = da.endpoint("/listings/blacklist")
-
-    def getAll(self):
+    
+    def get_all(self):
         r = self.endpoint.get()
     
         if (r.status_code == 404):
@@ -24,11 +24,7 @@ class Blacklist:
         for item in r.json():
             print(item['groupId'] + ':' + item['artifactId'] + ':' + item['version'])
 
-    @arg('gav', help='groupid:artifactid:version of artifact to check if it is in blacklist')
-    def getGAV(self, gav):
-        if not matchGAV(gav):
-            raise Exception("Expected gav in form of groupid:artifactid:version, got " + gav)
-
+    def get_gav(self, gav):
         groupId, artifactId, version = gav.split(":",3)
         r = self.endpoint.get("/gav?groupid="+groupId+"&artifactid="+artifactId+"&version="+version)
 
