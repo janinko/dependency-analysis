@@ -53,6 +53,13 @@ class DAClient:
         
         session.headers.update({'Authorization': " Bearer " + token})
         return session
+
+    def _handle_error(self, response):
+        if type(response) == dict and response['errorMessage']:
+            print(response['errorMessage'])
+        else:
+            print("Got 404 status from the server "+self.url_rest+".")
+        sys.exit(1)
        
     def _request(self, requests_method, path, json_request=None):
         link = self.url_rest + path
@@ -64,7 +71,9 @@ class DAClient:
             # this call throws an exception if the status is 4xx or 5xx
             # we have an exception for 404, since 404 can indicate other
             # normal stuff to the caller of the method
-            if reply.status_code != 404:
+            if reply.status_code == 404:
+                self._handle_error(reply)
+            else:
                 reply.raise_for_status()
             return reply
         except requests.exceptions.HTTPError:          
@@ -203,15 +212,5 @@ class AuthToken:
             return( str(reply.get('access_token')))
         else:
             raise Exception("Failed to obtain token from " + url)
-
-class Blacklist:
-
-    def __init__(self, da):
-        self.endpoint = da.endpoint("/listings/blacklist")
-
-    def getAll():
-        self.da.get()
-
-
 
 

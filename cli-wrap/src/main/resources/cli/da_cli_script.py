@@ -172,16 +172,6 @@ def print_whitelist_gavs(status):
     helper_print_white_artifacts_products(r.json())
 
 
-def add_black_artifact(gav):
-    endpoint = '/listings/blacklist/gav'
-    gid, aid, ver = gav.split(':')
-    json_request = {}
-    json_request['groupId'] = gid
-    json_request['artifactId'] = aid
-    json_request['version'] = ver
-    r = client._post(endpoint, json_request)
-    verify_response(r.json(), "Addition failed")
-
 def add_white_artifact(gav, product_version):
     endpoint = '/listings/whitelist/gav'
     gid, aid, ver = gav.split(':')
